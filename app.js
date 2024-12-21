@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const createError = require("http-errors");
 
+const {generateToken} = require("./utils/jwt");
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
