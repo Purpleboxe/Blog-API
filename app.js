@@ -2,15 +2,20 @@ const express = require("express");
 const app = express();
 const createError = require("http-errors");
 
-const {generateToken} = require("./utils/jwt");
+const passport = require("passport");
+const configurePassport = require("./config/passport");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(passport.initialize());
+configurePassport(passport);
+
 // Routes
-app.get("/", (req, res, next) => {
-    res.json({message: "Blog"});
-})
+const indexRoutes = require("./routes/index");
+const authRoutes = require("./routes/auth");
+app.use("/", indexRoutes);
+app.use("/user", authRoutes);
 
 // Catch 404 errors
 app.use(function (req, res, next) {
