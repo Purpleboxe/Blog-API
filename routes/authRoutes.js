@@ -6,9 +6,9 @@ const prisma = new PrismaClient();
 const passport = require("passport");
 const { body, validationResult } = require("express-validator");
 
-const router = express.Router();
+const authRouter = express.Router();
 
-router.post("/signup", [body("username").notEmpty().withMessage("Username is required").isAlphanumeric().withMessage("Username must only contain letters and numbers"), body("password").isLength({min: 8, max: 20}).withMessage("Password must be between 8 and 20 characters long.")], async (req, res) => {
+authRouter.post("/signup", [body("username").notEmpty().withMessage("Username is required").isAlphanumeric().withMessage("Username must only contain letters and numbers"), body("password").isLength({min: 8, max: 20}).withMessage("Password must be between 8 and 20 characters long.")], async (req, res) => {
   try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -28,6 +28,7 @@ router.post("/signup", [body("username").notEmpty().withMessage("Username is req
           data: {
               username,
               password: hashedPassword,
+              role: "user",
           },
       });
       res.status(201).json({ message: "User created successfully!" });
@@ -38,7 +39,7 @@ router.post("/signup", [body("username").notEmpty().withMessage("Username is req
 });
 
 
-router.post("/login", async (req, res) => {
+authRouter.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -56,4 +57,4 @@ router.post("/login", async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = authRouter;
