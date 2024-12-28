@@ -14,10 +14,10 @@ configurePassport(passport);
 // Routes
 const indexRoutes = require("./routes/indexRoutes");
 const authRoutes = require("./routes/authRoutes");
-const adminRoutes = require("./routes/adminRoutes");
+const authorRoutes = require("./routes/authorRoutes.js");
 app.use("/", indexRoutes);
 app.use("/user", authRoutes);
-app.use("/admin", adminRoutes);
+app.use("/author", authorRoutes);
 
 // Catch 404 errors
 app.use(function (req, res, next) {

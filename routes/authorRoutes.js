@@ -4,12 +4,12 @@ const { checkRole } = require("../utils/auth")
 const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
-const adminRouter = express.Router();
+const authorRouter = express.Router();
 
-adminRouter.use(passport.authenticate("jwt", { session: false }));
-adminRouter.use(checkRole("admin"));
+authorRouter.use(passport.authenticate("jwt", { session: false }));
+authorRouter.use(checkRole("author"));
 
-adminRouter.post("/create-post", async (req, res, next) => {
+authorRouter.post("/create-post", async (req, res, next) => {
     try {
         const {title, content} = req.body;
 
@@ -32,4 +32,4 @@ adminRouter.post("/create-post", async (req, res, next) => {
     }
 })
 
-module.exports = adminRouter;
+module.exports = authorRouter;
