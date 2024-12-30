@@ -1,6 +1,6 @@
 const express = require("express");
 const passport = require("passport");
-const { checkRole } = require("../utils/auth")
+const { checkRole, checkOwnership } = require("../utils/auth")
 const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
@@ -9,7 +9,7 @@ const authorRouter = express.Router();
 authorRouter.use(passport.authenticate("jwt", { session: false }));
 authorRouter.use(checkRole("author"));
 
-authorRouter.post("/create-post", async (req, res, next) => {
+authorRouter.post("/posts/create-post", async (req, res, next) => {
     try {
         const {title, content} = req.body;
 
@@ -30,6 +30,33 @@ authorRouter.post("/create-post", async (req, res, next) => {
         console.error(error);
         res.status(500).json({ message: "Server error" });
     }
-})
+});
+
+authorRouter.put("/posts/:postId/update", checkOwnership("postId", "post"), async (req, res, next) => {
+    try {
+        const { title, content } = req.body;
+
+        const updatedPost = await prisma.post.update({
+            where: { id: req.resource.id },
+            data: { title, content }
+        });
+
+        res.status(200).json({ message: "Post updated successfully!", updatedPost })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+authorRouter.delete("/posts/:postId/delete", checkOwnership("postId", "post"), async (req, res, next) => {
+    try {
+        await prisma.post.delete({ where: { id: req.resource.id } });
+
+        res.status(200).json({ message: "Post deleted successfully!" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
 
 module.exports = authorRouter;
