@@ -16,13 +16,45 @@ indexRouter.get("/", (req, res) => {
 
 indexRouter.get("/posts", async (req, res) => {
     try {
-        const posts = await prisma.post.findMany();
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const skip = (page - 1) * limit;
+
+        const sortBy = req.query.sortBy || "createdAt";
+        const order = req.query.order === "desc" ? "desc" : "asc";
+
+        const [posts, totalPosts] = await Promise.all([
+            prisma.post.findMany({
+                skip,
+                take: limit,
+                orderBy: {
+                    [sortBy]: order
+                }
+            }),
+            prisma.post.count()
+        ]);
+
+        const totalPages = Math.ceil(totalPosts / limit);
 
         if (!posts.length) {
-            res.status(200).json({ message: "No posts available!" });
+            return res.status(200).json({
+                message: "No posts available!",
+                pagination: {
+                    totalPosts,
+                    totalPages,
+                    currentPage: page,
+                }
+            });
         }
 
-        res.status(200).json(posts);
+        res.status(200).json({
+            posts,
+            pagination: {
+                totalPosts,
+                totalPages,
+                currentPage: page,
+            }
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
@@ -40,8 +72,14 @@ indexRouter.get("/posts/:postId", async (req, res) => {
                     include: {
                         author: {
                             select: { username: true }
+                        },
+                        likes: {
+                            where: { userId }
                         }
                     }
+                },
+                likes: {
+                    where: { userId }
                 }
             }
         });
@@ -51,6 +89,17 @@ indexRouter.get("/posts/:postId", async (req, res) => {
         }
 
         res.status(200).json(post);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+indexRouter.delete("/posts/:postId/delete", passport.authenticate("jwt", { session: false }), checkOwnership("postId", "post"), async (req, res, next) => {
+    try {
+        await prisma.post.delete({ where: { id: req.resource.id } });
+
+        res.status(200).json({ message: "Comment deleted successfully!" });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });

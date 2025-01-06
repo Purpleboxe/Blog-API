@@ -32,7 +32,9 @@ configurePassport(passport);
 const indexRoutes = require("./routes/indexRoutes");
 const authRoutes = require("./routes/authRoutes");
 const authorRoutes = require("./routes/authorRoutes.js");
+const likeRoutes = require("./routes/likeRoutes.js");
 app.use("/", indexRoutes);
+app.use("/", likeRoutes);
 app.use("/user", authRoutes);
 app.use("/author", authorRoutes);
 
